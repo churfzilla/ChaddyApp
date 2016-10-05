@@ -58,3 +58,5 @@ componentDidMount: function() {
   }
 
 });
+
+export default App;
