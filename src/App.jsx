@@ -1,18 +1,6 @@
-var data = {
-  currentUser: {name: "Bob"},
-  messages: [
-    {
-      id: 1,
-      username: "Bob",
-      content: "Has anyone seen my marbles?",
-    },
-    {
-      id: 2,
-      username: "Anonymous",
-      content: "No, I think you lost them. You lost your marbles Bob. You lost them for good."
-    }
-  ]
-};
+const wss = new WebSocket("ws://localhost:4000");
+const uuid = require('node-uuid');
+
 
 import React from 'react';
 import MessageList from './MessageList.jsx';
@@ -21,27 +9,26 @@ import ChatBar from './ChatBar.jsx'
 const App = React.createClass({
   getInitialState: function() {
     function addMessage(name, message) {
-      var data = {
-        currentUser: {name: name},
-        messages: this.state.loading.messages.concat({id: Date.now(), username: name, content: message})
-      };
-      this.setState({
-        loading: data
-      });
+      wss.send(JSON.stringify({id: uuid.v4(), username: name, content: message}));
     }
-    return {loading: data, addMessage: addMessage.bind(this)};
+    var initialLoading = {
+      currentUser: {name: ''},
+      messages: []
+    };
+    return {loading: initialLoading, addMessage: addMessage.bind(this)};
   },
 
-componentDidMount: function() {
-  console.log("componentDidMount <App />");
-  setTimeout(() => {
-    console.log("Simulating incoming message");
-    // Add a new message to the list of messages in the data store
-    this.state.loading.messages.push({id: 3, username: "Michelle", content: "Hello there!"});
-    // Update the state of the app component. This will call render()
-    this.setState({data: this.state.data})
-  }, 3000);
-},
+  componentDidMount: function() {
+    console.log("componentDidMount <App />");
+    console.log("Connected to server on port: 4000");
+
+    wss.onmessage = (message) => {
+      var parsed = JSON.parse(message.data);
+      let newMessages = this.state.loading.messages;
+      newMessages.push(parsed);
+      this.setState({messages: newMessages});
+    };
+  },
 
   render: function() {
     return (
@@ -56,7 +43,8 @@ componentDidMount: function() {
       </div>
     )
   }
-
 });
+
+
 
 export default App;

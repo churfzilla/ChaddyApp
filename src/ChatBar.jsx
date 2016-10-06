@@ -3,15 +3,11 @@ import React from 'react';
 let ChatBar = React.createClass({
 
   handleChange(event) {
-    // console.log(event.keyCode)
     if (event.keyCode == 13) {
       var username = this.refs.username.value;
-      // console.log(event.target);
       var message = this.state.value;
-      console.log(this.state);
       this.props.sendMessage(username, message);
     }
-    // console.log(message);
   },
 
   handleNameChange(event) {
@@ -33,11 +29,11 @@ let ChatBar = React.createClass({
     return (
       <footer>
           <input
-          id="username"
           type="text"
           ref="username"
           onChange={this.handleNameChange}
           value={this.state.currentUser}
+          placeholder="Your name here"
           />
           <input
           id="new-message"
