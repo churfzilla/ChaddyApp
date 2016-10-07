@@ -1,50 +1,75 @@
-const wss = new WebSocket("ws://localhost:4000");
-const uuid = require('node-uuid');
-
-
-import React from 'react';
+import React, {Component} from 'react';
+import ChatBar from './ChatBar.jsx';
+import Message from './Message.jsx';
 import MessageList from './MessageList.jsx';
-import ChatBar from './ChatBar.jsx'
+var uuid = require('uuid');
+var socket = new WebSocket("ws://localhost:4000");
 
 const App = React.createClass({
+
   getInitialState: function() {
-    function addMessage(name, message) {
-      wss.send(JSON.stringify({id: uuid.v4(), username: name, content: message}));
-    }
-    var initialLoading = {
-      currentUser: {name: ''},
-      messages: []
-    };
-    return {loading: initialLoading, addMessage: addMessage.bind(this)};
+    var currentUser = {};
+    var messages = [];
+    var notifications = [];
+    return {currentUser: currentUser, messages: messages, notifications: notifications};
   },
 
   componentDidMount: function() {
-    console.log("componentDidMount <App />");
-    console.log("Connected to server on port: 4000");
+    socket.onmessage = ({data}) => {
+      var parsed = JSON.parse(data);
+      switch(parsed.type) {
+        case "incomingMessage":
+          var newMessages = this.state.messages;
+          newMessages.push(parsed);
+          this.setState({messages: newMessages});
+          var nowUser = newMessages[newMessages.length - 1].username;
+          var lastUser = newMessages[newMessages.length - 2].username;
+          if(nowUser != lastUser) {
+            var content = lastUser + " changed their name to " + nowUser;
+            this.addNofication(content);
+          }
+          break;
+        case "incomingNotification":
+          var newNotification = this.state.notifications;
+          newNotification.push(parsed);
+          this.setState({notifications: newNotification});
+          break;
+        default:
+          throw new Error("Unknown event type " + data.type);
+      }
+    }
+  },
 
-    wss.onmessage = (message) => {
-      var parsed = JSON.parse(message.data);
-      let newMessages = this.state.loading.messages;
-      newMessages.push(parsed);
-      this.setState({messages: newMessages});
+  addMessage: function(name, message) {
+    var data = {
+      type: 'postMessage',
+      key: uuid.v1(),
+      username: name,
+      content: message
     };
+    socket.send(JSON.stringify(data));
+  },
+
+  addNofication: (notification) => {
+    var notify = {
+      type: 'postNofication',
+      content: notification
+    };
+    socket.send(JSON.stringify(notify));
   },
 
   render: function() {
     return (
       <div>
         <MessageList
-          messages={this.state.loading.messages}
-        />
+        messages={this.state.messages}
+        notifications={this.state.notifications}/>
         <ChatBar
-          currentUser={this.state.loading.currentUser.name}
-          sendMessage={this.state.addMessage}
-        />
+        currentUser={this.state.currentUser.name}
+        sendMessage={this.addMessage} />
       </div>
-    )
+    );
   }
 });
-
-
 
 export default App;

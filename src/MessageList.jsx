@@ -1,18 +1,39 @@
 import React from 'react';
+import App from './App.jsx';
 import Message from './Message.jsx';
-
+const uuid = require('uuid');
 
 const MessageList = React.createClass({
-  render: function() {
-    return (
-      <div id="message-list">
-          {this.props.messages.map((result) => {
-            return <Message
-              key = {result.id}
+  propTypes: {
+    content: React.PropTypes.string
+  },
+
+  getDefaultProps: function() {
+    return {
+      username: "Anon",
+      content: "Words go here."
+    }
+  },
+
+  render() {
+    return(
+      <section>
+        <div id="message-list">
+          {this.props.messages.map((result) => (
+            <Message
+              key = {uuid.v1()}
               username = {result.username}
-              content = {result.content} />
-          })}
-      </div>
+              content = {result.content}
+              />
+          ))}
+          {this.props.notifications.map((result) => (
+            <Message
+              key = {uuid.v1()}
+              content = {result.content}
+              />
+          ))}
+        </div>
+      </section>
     );
   }
 });
