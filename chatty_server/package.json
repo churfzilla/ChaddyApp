@@ -6,7 +6,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+
+  "repository": {
+    "type": "git",
+    "url": "git remote add origin git@github.com:churfzilla/ChaddyApp.git"
+  },
+
   "license": "ISC",
   "dependencies": {
     "express": "4.14.0",

@@ -1,7 +1,7 @@
 {
-  "name": "react-simple-boilerplate",
+  "name": "ChaddyApp",
   "version": "1.0.0",
-  "description": "Simple and lightweight Boilerplate for ReactJS projects",
+  "description": "Simple Chat App to test websockets",
   "scripts": {
     "lint": "eslint src",
     "start": "node server.js"
@@ -22,7 +22,7 @@
   "author": "Noah-Jerome Lotzer <n.lotzer@neusta.de>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/noahlotzer/react-simple-boilerplate/issues"
+    "url": ""
   },
   "homepage": "git remote add origin git@github.com:churfzilla/ChaddyApp",
   "engines": {
