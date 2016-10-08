@@ -10,7 +10,9 @@ const MessageList = React.createClass({
       <div className="wrapper">
         <nav>
         <h1>Chaddy App</h1>
-        <ClientCounter clientCount={this.props.clientCount} />
+        <ClientCounter
+          clientCount={this.props.clientCount}
+        />
         </nav>
         <div id="message-list">
           {this.props.messages.map((message) => {

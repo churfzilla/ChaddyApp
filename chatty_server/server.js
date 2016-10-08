@@ -2,10 +2,7 @@ const express = require('express');
 const SocketServer = require('ws').Server;
 const uuid = require('node-uuid');
 const PORT = 4000;
-
 const util = require('util');
-const inspect = (o, d) => console.log(util.inspect(o, {colors: true, depth: d || 1}));
-
 const server = express()
   .use(express.static('public'))
   .listen(PORT, '0.0.0.0', 'localhost', () => console.log(`Listening on ${ PORT }`));

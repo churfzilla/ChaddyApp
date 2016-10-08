@@ -36,7 +36,7 @@ const App = React.createClass({
           case 'incomingMessage':
             const oldMessages = this.state.messages;
             this.setState({
-              messages: [...oldMessages, message] // ES6 Spread Notation
+              messages: [...oldMessages, message] // (...) is ES6 Spread Notation
             })
             break;
           default:
