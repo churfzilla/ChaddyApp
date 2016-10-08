@@ -1,74 +1,104 @@
-import React, {Component} from 'react';
-import ChatBar from './ChatBar.jsx';
-import Message from './Message.jsx';
+
+import React from 'react';
 import MessageList from './MessageList.jsx';
-var uuid = require('uuid');
-var socket = new WebSocket("ws://localhost:4000");
+import ChatBar from './ChatBar.jsx'
 
 const App = React.createClass({
 
   getInitialState: function() {
-    var currentUser = {};
-    var messages = [];
-    var notifications = [];
-    return {currentUser: currentUser, messages: messages, notifications: notifications};
+    return {
+      type: "",
+      currentUser: {name: 'Anonymous'},
+      messages: [],
+      ready: false
+    };
   },
 
-  componentDidMount: function() {
-    socket.onmessage = ({data}) => {
-      var parsed = JSON.parse(data);
-      switch(parsed.type) {
-        case "incomingMessage":
-          var newMessages = this.state.messages;
-          newMessages.push(parsed);
-          this.setState({messages: newMessages});
-          var nowUser = newMessages[newMessages.length - 1].username;
-          var lastUser = newMessages[newMessages.length - 2].username;
-          if(nowUser != lastUser) {
-            var content = lastUser + " changed their name to " + nowUser;
-            this.addNofication(content);
-          }
-          break;
-        case "incomingNotification":
-          var newNotification = this.state.notifications;
-          newNotification.push(parsed);
-          this.setState({notifications: newNotification});
-          break;
-        default:
-          throw new Error("Unknown event type " + data.type);
+  componentDidMount() {
+    console.log("componentDidMount <App />");
+
+    this.wss = new WebSocket("ws://"+location.hostname+":4000");
+    console.log('Connecting');
+
+    this.wss.onmessage = ({data}) => {
+      const message = JSON.parse(data);
+      if(message.type)
+      {
+        switch(message.type)
+        {
+          case 'clientCount':
+            const { count } = message;
+            this.setState({
+              clientCount: count
+            })
+            break;
+          case 'incomingNotification':
+          case 'incomingMessage':
+            const oldMessages = this.state.messages;
+            this.setState({
+              messages: [...oldMessages, message] // ES6 Spread Notation
+            })
+            break;
+          default:
+            console.error("Unknown message type", message);
+        }
       }
-    }
+    },
+
+    this.wss.onopen = () => {
+      console.log("Connected to server");
+    };
   },
 
-  addMessage: function(name, message) {
-    var data = {
-      type: 'postMessage',
-      key: uuid.v1(),
-      username: name,
-      content: message
-    };
-    socket.send(JSON.stringify(data));
-  },
-
-  addNofication: (notification) => {
-    var notify = {
-      type: 'postNofication',
-      content: notification
-    };
-    socket.send(JSON.stringify(notify));
+  componentWillUnmount()
+  {
+    this.wss.close();
   },
 
   render: function() {
     return (
       <div>
         <MessageList
-        messages={this.state.messages}
-        notifications={this.state.notifications}/>
+          messages={this.state.messages}
+          clientCount={this.state.clientCount}
+        />
         <ChatBar
-        currentUser={this.state.currentUser.name}
-        sendMessage={this.addMessage} />
+          sendMessage={this.addMessage}
+          onNameChanged={this.onNameChanged}
+          currentUser={this.state.currentUser}
+        />
       </div>
-    );
+    )
+  },
+
+  addMessage(message, username) {
+
+    if (username !== this.state.currentUser.name) {
+      let newUserMessage = {
+        type: "postNotification",
+        message: this.state.currentUser.name + " changed their name to " + username
+      };
+      this.state.currentUser.name = username;
+
+      let newCurrentUser = {name: username};
+      this.setState({currentUser: newCurrentUser});
+      this.wss.send(JSON.stringify(newUserMessage));
+  }
+    let msg = {
+      type: "postMessage",
+      username: this.state.currentUser.name,
+      message
+    };
+
+    this.wss.send(JSON.stringify(msg));
+  },
+
+  onNameChanged(name) {
+    this.setState({
+      currentUser: {
+        name
+      }
+    })
   }
 });
 

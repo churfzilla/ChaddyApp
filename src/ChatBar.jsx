@@ -1,43 +1,50 @@
 import React from 'react';
-import App from './App.jsx';
 
-const ChatBar = React.createClass({
+let ChatBar = React.createClass({
 
-  handleChange(event) {
-    if (event.keyCode == 13) {
-      var username = this.refs.username.value;
-      var messages = this.state.value;
-      this.props.sendMessage(username, messages);
+  handleChange({keyCode}) {
+    if (keyCode == 13) {
+      const message = this.state.message;
+      const username = this.state.username;
+      this.props.sendMessage(message, username);
+      this.setState({message: ""});
     }
   },
 
-  handleNameChange() {
-    this.setState({currentUser: event.target.value});
+  handleNameChange(event) {
+    this.setState({username: event.target.value});
   },
 
   handleInput(event) {
-    this.setState({value: event.target.value});
+    this.setState({message: event.target.value});
   },
 
-  render() {
-    return(
+  getInitialState: function() {
+    return {
+      message: "",
+      username: "Anonymous"
+    };
+  },
+
+  render: function() {
+    return (
       <footer>
-        <input
-          id="username"
-          type="text"
-          ref="username"
-          onChange={this.handleNameChange}
-          value= {this.props.currentUser}
-          placeholder="Your Name (Optional)"/>
-        <input
-          id="new-message"
-          type="text"
-          placeholder="Type a message and hit ENTER"
-          onChange={this.handleInput}
-          onKeyDown={this.handleChange}
+          <input
+            type="text"
+            onChange={this.handleNameChange}
+            value={this.state.username}
+            placeholder="Anonymous"
+          />
+          <input
+            id="new-message"
+            type="text"
+            placeholder="Type a message and hit ENTER"
+            onChange={this.handleInput}
+            onKeyDown={this.handleChange}
+            value={this.state.message}
           />
       </footer>
-    );
+    )
   }
 });
 

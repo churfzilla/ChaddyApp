@@ -1,39 +1,33 @@
 import React from 'react';
-import App from './App.jsx';
 import Message from './Message.jsx';
-const uuid = require('uuid');
+import MessageSystem from './MessageSystem.jsx';
+import ClientCounter from './ClientCounter.jsx';
+
 
 const MessageList = React.createClass({
-  propTypes: {
-    content: React.PropTypes.string
-  },
-
-  getDefaultProps: function() {
-    return {
-      username: "Anon",
-      content: "Words go here."
-    }
-  },
-
-  render() {
-    return(
-      <section>
+  render: function() {
+    return (
+      <div className="wrapper">
+        <nav>
+        <h1>Chaddy App</h1>
+        <ClientCounter clientCount={this.props.clientCount} />
+        </nav>
         <div id="message-list">
-          {this.props.messages.map((result) => (
-            <Message
-              key = {uuid.v1()}
-              username = {result.username}
-              content = {result.content}
-              />
-          ))}
-          {this.props.notifications.map((result) => (
-            <Message
-              key = {uuid.v1()}
-              content = {result.content}
-              />
-          ))}
+          {this.props.messages.map((message) => {
+            if (message.username === undefined) {
+              return <MessageSystem
+            key={message.id}
+            {...message}
+            />
+          } else {
+            return <Message
+            key={message.id}
+            {...message}
+            />
+          }
+          })}
         </div>
-      </section>
+      </div>
     );
   }
 });
